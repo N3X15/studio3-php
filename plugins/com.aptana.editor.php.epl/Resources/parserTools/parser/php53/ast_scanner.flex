@@ -196,6 +196,7 @@ DNUM=([0-9]*"."[0-9]+)|([0-9]+"."[0-9]*)
 EXPONENT_DNUM=(({LNUM}|{DNUM})[eE][+-]?{LNUM})
 HNUM="0x"[0-9a-fA-F]+
 LABEL=[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*
+XHP_LABEL=[a-zA-Z_:\x7f-\xff][a-zA-Z0-9_:\x7f-\xff]*
 WHITESPACE=[ \n\r\t]+
 TABS_AND_SPACES=[ \t]*
 ANY_CHAR=[^]
@@ -759,7 +760,7 @@ NOWDOC_CHARS=([^\n\r]|{NEWLINE}+([^a-zA-Z_\x7f-\xff\n\r]|({LABEL}([^a-zA-Z0-9_\x
     }
 }
 
-<YYINITIAL>"<?php"([ \t]|{NEWLINE}) {
+<YYINITIAL>"<?(php|hh)"([ \t]|{NEWLINE}) {
     yybegin(ST_IN_SCRIPTING);
 	//return T_OPEN_TAG;
 }
@@ -829,6 +830,11 @@ NOWDOC_CHARS=([^\n\r]|{NEWLINE}+([^a-zA-Z_\x7f-\xff\n\r]|({LABEL}([^a-zA-Z0-9_\x
 }
 
 <ST_IN_SCRIPTING,ST_VAR_OFFSET>{LABEL} {
+    return createFullSymbol(ParserConstants.T_STRING);
+}
+
+// N3X - XHP
+<ST_IN_SCRIPTING>{XHP_LABEL} {
     return createFullSymbol(ParserConstants.T_STRING);
 }
 

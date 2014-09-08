@@ -119,6 +119,7 @@ DNUM=([0-9]*"."[0-9]+)|([0-9]+"."[0-9]*)
 EXPONENT_DNUM=(({LNUM}|{DNUM})[eE][+-]?{LNUM}?)
 HNUM="0x"[0-9a-fA-F]+
 LABEL=[a-zA-Z_\x7f-\xff][a-zA-Z0-9_\x7f-\xff]*
+CLASS_LABEL=[a-zA-Z_:\x7f-\xff][a-zA-Z0-9_:\x7f-\xff]*
 WHITESPACE=[ \n\r\t]+
 TABS_AND_SPACES=[ \t]*
 TOKENS=[:,.\[\]()|\^&+-//*=%!~$<>?@]
@@ -594,6 +595,10 @@ PHP_OPERATOR="=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-="|"*="|
 }
 
 <ST_PHP_IN_SCRIPTING,ST_PHP_VAR_OFFSET>{LABEL} {
+    return  PHP_STRING;
+}
+// N3X - XHP stuff.
+<ST_PHP_IN_SCRIPTING>{CLASS_LABEL} {
     return  PHP_STRING;
 }
 
