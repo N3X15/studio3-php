@@ -129,7 +129,7 @@
 				</dirset>
 			</path>
 			<sequential>
-				<exec executable="/bin/bash" dir="@{file}" outputproperty="@{file}.committed.max">
+				<exec executable="${bin.bash}" dir="@{file}" outputproperty="@{file}.committed.max">
 					<arg value="-c" />
 					<arg value="${git.executable} log --max-count=1 --pretty=format:'%ct' ." />
 				</exec>

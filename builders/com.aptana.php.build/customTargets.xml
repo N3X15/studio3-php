@@ -13,12 +13,14 @@
 		<!-- Need to grab version qualifier for scripting plugin, we do that by cloning and checking 
 		last commit of each bundle vs last commit of plugin. This MUST be done before the generateScript target
 		or else the qualifier we insert into build.properties is ignored.  -->
-		<property name="scripting.plugin" value="com.aptana.editor.php"/>
-		<property name="scripting.plugin.dir" location="${buildDirectory}/plugins/${scripting.plugin}"/>
-		<property name="bundle.timestamps.file" location="${scripting.plugin.dir}/bundle_timestamps.txt"/>
+		<property name="scripting.plugin" value="com.aptana.editor.php" />
+		<property name="scripting.plugin.dir" location="${buildDirectory}/plugins/${scripting.plugin}" />
+		<property name="bundle.timestamps.file" location="${scripting.plugin.dir}/bundle_timestamps.txt" />
+		
+		<mkdir dir="${scripting.plugin.dir}/bundles" />
 
 		<!-- Find latest commit date between this plugin and every bundle and use that as the build qualifier! -->
-		<exec executable="/bin/bash" dir="${workspace}/plugins/${scripting.plugin}" append="true" output="${bundle.timestamps.file}">
+		<exec executable="${bin.bash}" dir="${workspace}/plugins/${scripting.plugin}" append="true" output="${bundle.timestamps.file}">
 			<arg value="-c" />
 			<arg value="git log --max-count=1 --pretty=format:'%ct,' ." />
 		</exec>
@@ -26,11 +28,22 @@
 		<!-- Pull down the cache pre-generation scripts -->
 		<delete dir="${scripting.plugin.dir}/bundles/studio3-sdk" failonerror="true" />
 		<echo message="git clone git://github.com/aptana/studio3-sdk.git" />
-		<exec executable="/bin/bash" dir="${scripting.plugin.dir}/bundles" failonerror="true">
+		<exec executable="${bin.bash}" dir="${scripting.plugin.dir}/bundles" failonerror="true">
 			<arg value="-c" />
 			<arg value="git clone git://github.com/aptana/studio3-sdk.git" />
 		</exec>
+		
 		<property name="cache.generator.script" location="${scripting.plugin.dir}/bundles/studio3-sdk/tools/bundle_cache_generator/main.rb"/>
+		<if>
+			<os family="windows" />
+			<then>
+				<exec executable="cygpath" outputproperty="cache.generator.script.cygpath">
+				   <arg value="-ma"/>
+				   <arg value="${cache.generator.script}"/>
+				</exec>
+				<echo message="${cache.generator.script.cygpath}" />
+			</then>
+		</if>
 		<!-- TODO Checkout the correct branch of the generator scripts... -->
 
 		<!-- Grab the pre-defined set of bundles -->
@@ -83,18 +96,18 @@
 	<target name="clone-bundle">
 		<delete dir="${scripting.plugin.dir}/bundles/${bundle.dir.name}" failonerror="true" />
 		<echo message="git clone git://github.com/aptana/${bundle.name}.git ${bundle.dir.name}" level="info" />
-		<exec executable="/bin/bash" dir="${scripting.plugin.dir}/bundles" failonerror="true">
+		<exec executable="${bin.bash}" dir="${scripting.plugin.dir}/bundles" failonerror="true">
 			<arg value="-c" />
 			<arg value="git clone git://github.com/aptana/${bundle.name}.git ${bundle.dir.name}" />
 		</exec>
 		<!-- Checkout the specified branch -->
 		<echo message="git checkout ${bundle.branch}" level="info" />
-		<exec executable="/bin/bash" dir="${scripting.plugin.dir}/bundles/${bundle.dir.name}" failonerror="true">
+		<exec executable="${bin.bash}" dir="${scripting.plugin.dir}/bundles/${bundle.dir.name}" failonerror="true">
 			<arg value="-c" />
 			<arg value="git checkout ${bundle.branch}" />
 		</exec>
 		<!-- Grab lastmod and append it to file containing all of the lastmods for each packaged ruble -->
-		<exec executable="/bin/bash" dir="${scripting.plugin.dir}/bundles/${bundle.dir.name}" append="true" output="${bundle.timestamps.file}" failonerror="true">
+		<exec executable="${bin.bash}" dir="${scripting.plugin.dir}/bundles/${bundle.dir.name}" append="true" output="${bundle.timestamps.file}" failonerror="true">
 			<arg value="-c" />
 			<arg value="git log --max-count=1 --pretty=format:'%ct,' ." />
 		</exec>
@@ -103,9 +116,19 @@
 		<delete dir="${scripting.plugin.dir}/bundles/${bundle.dir.name}/.git" quiet="true" />
 		
 		<!-- Now pre-generate the cache files! -->
-		<exec executable="/bin/bash" dir="${scripting.plugin.dir}/bundles/studio3-sdk/tools/bundle_cache_generator" failonerror="true">
+		<if>
+			<os family="windows" />
+			<then>
+				<property name="cache.generator.script.truepath" value="${cache.generator.script.cygpath}" />
+			</then>
+			<else>
+				<property name="cache.generator.script.truepath" value="${cache.generator.script}" />
+			</else>
+		</if>
+					
+		<exec executable="${bin.bash}" dir="${scripting.plugin.dir}/bundles/studio3-sdk/tools/bundle_cache_generator" failonerror="true">
 			<arg value="-c" />
-			<arg value="${ruby.executable} -KU ${cache.generator.script} ${scripting.plugin.dir}/bundles/${bundle.dir.name}" />
+			<arg value="${ruby.executable} -KU ${cache.generator.script.truepath} ${scripting.plugin.dir}/bundles/${bundle.dir.name}" />
 		</exec>
 	</target>
 
@@ -113,7 +136,7 @@
 	<!-- Steps to do before the repositories are being processed -->
 	<!-- ===================================================================== -->
 	<target name="preProcessRepos">
-		<p2.mirror destination="file:${repoBaseLocation}/mirrored">
+		<p2.mirror destination="file:${repoBaseLocation}/mirrored" verbose="true">
 			<source location="${studio3.p2.repo}" />
 			<iu id="com.aptana.feature.feature.group" />
 		</p2.mirror>
@@ -124,7 +147,7 @@
 	<!-- ===================================================================== -->
 	<target name="postProcessRepos">
 		<!-- clean up repos now that they've been transformed. save disk space (necessary when compiling in RAM disk) -->
-		<delete dir="${repoBaseLocation}" />
+		<!-- <delete dir="${repoBaseLocation}" /> -->
 	</target>
 
 	<!-- ===================================================================== -->
