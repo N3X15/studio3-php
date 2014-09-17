@@ -39,6 +39,7 @@ import org2.eclipse.php.internal.core.util.collections.IntHashtable;
 %state ST_PHP_LINE_COMMENT
 %state ST_PHP_HIGHLIGHTING_ERROR
 %state ST_PHP_END_NOWDOC
+%state ST_PHP_IN_ARRAY
 
 %{
     public PhpLexer(int state){
@@ -457,6 +458,16 @@ PHP_OPERATOR="=>"|"++"|"--"|"==="|"!=="|"=="|"!="|"<>"|"<="|">="|"+="|"-="|"*="|
 
 <ST_PHP_IN_SCRIPTING>"array" {
     return PHP_ARRAY;
+}
+
+<ST_PHP_IN_SCRIPTING>"[" {
+	pushState(ST_PHP_ARRAY);
+    return PHP_ARRAY_BOPEN;
+}
+
+<ST_PHP_IN_ARRAY>"]" {
+	popState();
+    return PHP_ARRAY_BCLOSE;
 }
 
 <ST_PHP_IN_SCRIPTING>"parent" {

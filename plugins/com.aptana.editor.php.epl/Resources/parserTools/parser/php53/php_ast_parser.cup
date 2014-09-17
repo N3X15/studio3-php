@@ -1910,6 +1910,12 @@ T_LIST:s T_OPEN_PARENTHESE assignment_list:varList T_CLOSE_PARENTHESE:close T_EQ
 	RESULT = new ArrayCreation(sleft, eright, parser.ast, list);
 :}
 
+/* N3X: PHP 5.4 arrays. */
+| T_OPEN_RECT:s array_pair_list:list T_CLOSE_RECT:e
+{:
+	RESULT = new ArrayCreation(sleft, eright, parser.ast, list);
+:}
+
 | T_BACKQUATE:s backticks_expr:list T_BACKQUATE:e
 {:
 	RESULT = new BackTickExpression(sleft, eright, parser.ast, list);
