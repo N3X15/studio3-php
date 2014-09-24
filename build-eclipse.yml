@@ -12,12 +12,10 @@
 ant:
   properties:
     files:
-      # Global Aptana-specific properties
-      - %%WORKSPACE%%/../aptana-studio3-release/properties/studio3.properties
-      # Eclipse properties (path, builders)
-      - %%WORKSPACE%%/../aptana-studio3-release/properties/eclipse.properties
-      # P2 deployment paths.
-      - %%WORKSPACE%%/../aptana-studio3-release/properties/p2.properties
+      # See studio3 for more information on these.
+      - "%%WORKSPACE%%/../aptana-studio3-release/properties/studio3.properties"
+      - "%%WORKSPACE%%/../aptana-studio3-release/properties/eclipse.properties"
+      - "%%WORKSPACE%%/../aptana-studio3-release/properties/p2.properties"
     keys: {}
     outfile: /tmp/jenkins-%%JOB_NAME%%.properties
     secret-keys: []
